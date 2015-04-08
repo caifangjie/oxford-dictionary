@@ -1,0 +1,452 @@
+﻿<html>
+<head>
+<title>搜索好友</title>
+<style type="text/css">
+*{margin:0px; padding:0px;}
+div#search_area{width:481px; height:108px; border:1px #acacac solid; 
+				background-color:#CB9DC1; 
+				margin-left:410px; margin-top:1px;}
+
+p#area{margin-left:3px; width:160px;margin-top:1px; z-index:2;}
+select#province{height:30px;}
+select#city{display:none;width:54px;height:30px;position:relative; top:-30px; left:100px;}
+
+p#info{margin-left:120px; margin-top:-30px;}
+input#age{width:52px; height:30px;}
+
+div#tags{margin-top:-10px; margin-left:3px;}
+span.tname{color:red;position:relative; top:20px;}
+div.tag{width:420px; height:65px; border:1px #007065 dashed ;}
+div.tag input{margin-left:50px; margin-top: 5px;}
+
+div#user_info{width:700px;margin-left:410px; margin-top:2px;}
+
+table#user{border:1px #ff0000 solid;background-color:#918597;width:750px; cellpadding:2px;}
+th{border:1px solid #acacac;text-align:center;}
+td{border:1px solid #CCC;text-align:center;}
+
+
+</style>
+
+<script type="text/javascript">
+//创建XHR
+function getXMLHttpRequest()
+{
+	var xmlhttp=null;
+	if(window.ActiveXObject)
+	{
+		xmlhttp = new ActiveXObject("Microsoft.XMLHttp");
+	}
+	else
+	{
+		xmlhttp=new XMLHttpRequest();
+	}
+	return xmlhttp;
+}
+function $(id)
+{
+	return document.getElementById(id);
+}
+function change_info_pos()
+{
+	var user_info = $("info");
+	user_info.setAttribute("style", "position:relative;left:50px; top:-30px;");
+}
+
+function change_tag_pos()
+{
+	var user_tag = $("tags");
+	user_tag.setAttribute("style", "position:relative;left:3px; top:-32px;");
+}
+function select_city(id)
+{
+	var province = $(id).value;
+	var url = "/ciba/niujin-beta/friend/returncity.process.php";
+	var data="?province="+province+"&rand="+Math.random();
+	var xmlhttp = getXMLHttpRequest();
+	//alert(url+data);
+	if(xmlhttp)
+	{
+		xmlhttp.open("get", url+data, true);
+		xmlhttp.onreadystatechange = function()
+		{
+			if (xmlhttp.readyState==4 && xmlhttp.status==200)
+			{
+				var res=xmlhttp.responseText;
+				var cities = eval("("+res+")");
+				var city_node = $("city");
+				if(city_node.length > 0)
+				{
+					var len = city_node.length;
+					//alert(city_node.childNodes[0]);
+					for(index=0; index < len;index++)
+					{
+						city_node.removeChild(city_node.firstChild);
+					}
+				}
+				for(i in cities)
+				{
+					city_node.style.display="block";
+					
+					var city = document.createElement("option");
+					city.setAttribute("value", cities[i].en);
+					city.appendChild(document.createTextNode(cities[i].ch));
+					city_node.appendChild(city);
+				}
+				change_info_pos();
+				change_tag_pos()
+				
+				//$("info").style.margin-left="180px";
+				//$("info").style.margin-top="-30px";
+			}
+		}
+		xmlhttp.send(null);
+	}
+	
+}
+function process()
+{
+	document.getElementById("feedback").innerHTML="<img src='../image/loading.gif' width='30px'  />";
+}
+function search()
+{
+	var user_info = getData();
+	if(user_info == false) 
+	{
+		return false;
+	}
+	var url = "/ciba/niujin-beta/friend/admin/search.process.php";
+	var data = "province="+user_info[0]+"&city="+user_info[1]+"&age="+user_info[2]+"&sex="+user_info[3]+"&tag="+user_info[4];
+	var xmlhttp = getXMLHttpRequest();
+	
+	var user_info = document.getElementById("user_info");
+	//alert(user_info.childNodes.length);
+	if(user_info.childNodes.length > 0)
+	{
+		for(index=0; index < user_info.childNodes.length; index++)
+		{
+			user_info.removeChild(user_info.firstChild);
+		}
+	}
+	
+	if(xmlhttp)
+	{
+		xmlhttp.open("get", url+'?'+data,true)
+		//request.setRequestHeader('Content-type', 'application/x-www-form-urlencoded'); 
+		xmlhttp.onreadystatechange = function()
+		{
+			if (xmlhttp.readyState==4 && xmlhttp.status==200)
+			{
+				var res=xmlhttp.responseText;
+				var user_info = eval("("+res+")");
+				
+				/*
+				 * 创建表
+				*/
+				var table = document.createElement("table");
+				table.setAttribute("id", "user");
+				
+				var tr= document.createElement("tr");
+				/*
+				 * 创建表头字段
+				*/
+				var th_name = document.createElement("th");
+				th_name.appendChild(document.createTextNode("姓名"));
+				tr.appendChild(th_name);
+				
+				var th_sex = document.createElement("th");
+				th_sex.appendChild(document.createTextNode("性别"));
+				tr.appendChild(th_sex);
+				
+				var th_age = document.createElement("th");
+				th_age.appendChild(document.createTextNode("年龄"));
+				tr.appendChild(th_age);
+				
+				var th_qq = document.createElement("th");
+				th_qq.appendChild(document.createTextNode("QQ号"));
+				tr.appendChild(th_qq);
+				
+				var th_area = document.createElement("th");
+				th_area.appendChild(document.createTextNode("地区"));
+				tr.appendChild(th_area);
+				
+				var th_hidden = document.createElement("th");
+				th_hidden.appendChild(document.createTextNode("隐藏"));
+				tr.appendChild(th_hidden);
+				
+				var th_show= document.createElement("th");
+				th_show.appendChild(document.createTextNode("显示"));
+				tr.appendChild(th_show);
+				
+				var th_del = document.createElement("th");
+				th_del.appendChild(document.createTextNode("删除"));
+				tr.appendChild(th_del);
+				
+				var th_status = document.createElement("th");
+				th_status.appendChild(document.createTextNode("状态"));
+				tr.appendChild(th_status);
+				
+				/*
+				 *创建表头
+				*/
+				table.appendChild(tr);
+				$("user_info").appendChild(table);
+				
+				for(i in user_info)
+				{
+					//alert(user_info[i].name);
+					if(user_info[i].name == 'none')
+					{
+						var tr = document.createElement("tr");
+						var td = document.createElement("td");
+						td.setAttribute("colspan", "8");
+						td.appendChild(document.createTextNode("对不起，没有找到相关用户信息"));
+						tr.appendChild(td);
+						table.appendChild(tr);
+					}
+					else
+					{
+						var tr = document.createElement("tr");
+						
+						//姓名
+						var td_name = document.createElement("td");
+						td_name.appendChild(document.createTextNode(user_info[i].name));
+						tr.appendChild(td_name);
+						
+						//性别
+						var td_sex = document.createElement("td");
+						td_sex.appendChild(document.createTextNode(user_info[i].sex));
+						tr.appendChild(td_sex);
+						
+						//年龄
+						var td_age = document.createElement("td");
+						td_age.appendChild(document.createTextNode(user_info[i].age));
+						tr.appendChild(td_age);
+						
+						//QQ账号
+						var td_qq = document.createElement("td");
+						td_qq.appendChild(document.createTextNode(user_info[i].qq));
+						tr.appendChild(td_qq);
+						
+						//地区
+						var td_area = document.createElement("td");
+						td_area.appendChild(document.createTextNode(user_info[i].area));
+						tr.appendChild(td_area);
+						
+						// 隐藏
+						var td_hidden = document.createElement("td");
+						var city_name = user_info[i].city_name;
+						var id=user_info[i].unique_id;
+						var image_id = user_info[i].image_id;
+						var hidden_op = "hidden.process.php?city_name="+city_name+"&id="+id+"&op=hidden";
+						
+						var a_link = document.createElement("a");
+						a_link.setAttribute("href", hidden_op);
+						a_link.setAttribute("onclick", "hidden_field(this.href);");
+						a_link.appendChild(document.createTextNode("隐藏"));
+						td_hidden.appendChild(a_link);
+						tr.appendChild(td_hidden);
+						
+						//显示
+						var td_show = document.createElement("td");
+						var show_op = "hidden.process.php?city_name="+city_name+"&id="+id+"&op=show";
+						var a_link = document.createElement("a");
+						a_link.setAttribute("href", show_op);
+						a_link.setAttribute("onclick", "show_field(this.href);");
+						a_link.appendChild(document.createTextNode("显示"));
+						td_show.appendChild(a_link);
+						tr.appendChild(td_show);
+						
+						//删除操作
+						var td_del = document.createElement("td");
+						var del_op = "hidden.process.php?city_name="+city_name+"&id="+id+"&image_id="+image_id+"&op=del";
+						var a_link = document.createElement("a");
+						a_link.setAttribute("href", del_op);
+						a_link.setAttribute("onclick", "del_field(this.href);");
+						a_link.appendChild(document.createTextNode("删除"));
+						td_del.appendChild(a_link);
+						tr.appendChild(td_del);
+						
+						//状态信息
+						var status = user_info[i].status;
+						var td_status = document.createElement("td");
+						if(status=="yes")
+						{
+							td_status.appendChild(document.createTextNode("显示中"));
+							td_status.setAttribute("style", "color:green;");
+						}
+						else
+						{
+							td_status.appendChild(document.createTextNode("已隐藏"));
+							td_status.setAttribute("style", "color:grey;");
+						}
+						tr.appendChild(td_status);
+						
+						
+						//添加一行数据
+						table.appendChild(tr);
+						
+					}
+				}
+			}
+		}
+		xmlhttp.send(null);
+	}
+}
+
+function getData()
+{
+	var user_info = new Array(5);
+	//获取省份
+	var province_name = $("province").options[$("province").selectedIndex].value;
+	user_info[0] = province_name;
+	if(user_info[0] == 'none')
+	{
+		$("province").setAttribute("style", "border: 1px #ff0000 solid");
+		return false;
+	}
+	
+	//获取城市
+	var city_name = $("city").options[$("city").selectedIndex].value;
+	user_info[1] = city_name;
+	
+	//获取年龄
+	var user_age = $("age").value;
+	user_info[2] = user_age;
+	
+	//获取性别
+	var user_sex_list = document.getElementsByName("sex");
+	var user_sex;
+	for(i in user_sex_list)
+	{
+		if(user_sex_list[i].checked == true)
+		{
+			user_sex = user_sex_list[i].value;
+		}
+	}
+	user_info[3] = user_sex;
+	
+	//获取特征值
+	var user_tags_list = document.getElementsByName("tag");
+	var user_tag= '';
+	//alert(user_tags_list);
+	for(i=0; i < user_tags_list.length; i++)
+	{
+		if(user_tags_list[i].checked)
+		{
+			user_tag += user_tags_list[i].value+'__';
+		}
+	}
+	user_info[4] = user_tag.slice(0,-2);
+	
+	return user_info;
+}
+function hidden_field(href)
+{
+	var xmlhttp = getXMLHttpRequest();
+	if(xmlhttp)
+	{
+		xmlhttp.open("get", href, true);
+		xmlhttp.onreadystatechange = function()
+		{
+			if(xmlhttp.readyState==4 && xmlhttp.status == 200)
+			{
+				window.location.href = "http://localhost/ciba/niujin-beta/friend/admin/admin.view.html";
+			}
+		}
+		xmlhttp.send(null);
+	}
+	return false;
+}
+
+function show_field(href)
+{
+	var xmlhttp = getXMLHttpRequest();
+	if(xmlhttp)
+	{
+		xmlhttp.open("get", href, true);
+		xmlhttp.onreadystatechange = function()
+		{
+			if(xmlhttp.readyState==4 && xmlhttp.status == 200)
+			{
+				window.location.href = "http://localhost/ciba/niujin-beta/friend/admin/admin.view.html";
+			}
+		}
+		xmlhttp.send(null);
+	}
+	return false;
+}
+
+function del_field(href)
+{
+	var xmlhttp = getXMLHttpRequest();
+	if(xmlhttp)
+	{
+		xmlhttp.open("get", href, true);
+		xmlhttp.onreadystatechange = function()
+		{
+			if(xmlhttp.readyState==4 && xmlhttp.status == 200)
+			{
+				window.location.href = "http://localhost/ciba/niujin-beta/friend/admin/admin.view.html";
+			}
+		}
+		xmlhttp.send(null);
+	}
+	return false;
+}
+
+</script>
+
+</head>
+<body bgcolor="#RGB(67,65,65)">
+<!--搜索表单-->
+<div id="search_area">
+<!--按地区搜索-->
+<p id="area">地&nbsp;区<select id="province" name="area" onchange="select_city(this.id);">
+			<option value="none">省份</option>
+			<option value="hb">湖北</option>
+			<option value="hn">湖南</option>
+			<option value="gd">广东</option>
+			</select>
+<select id="city" name="city"></select></p>
+
+<!--按年龄搜索-->
+<p id="info">
+年&nbsp;龄<input type="text" name="age" id = "age" value="18" />
+
+<!--按性别搜索-->
+性&nbsp;别
+<input type="radio" name="sex" value="男" checked="checked">男
+<input type="radio" name="sex" value="女">女
+<input type="radio" name="sex" value="*">保密
+</p>
+
+
+<!--按特征搜索-->
+<div id="tags">
+<span class="tname">特&nbsp;征</span>
+<div class="tag">
+<input type="checkbox" name="tag" value="美丽" checked>美丽
+<input type="checkbox" name="tag" value="善良">善良
+<input type="checkbox" name="tag" value="清纯">清纯
+<input type="checkbox" name="tag" value="知性">知性<br />
+<input type="checkbox" name="tag" value="贤惠">贤惠
+<input type="checkbox" name="tag" value="优雅">优雅
+<input type="checkbox" name="tag" value="成熟">成熟
+<input type="checkbox" name="tag" value="高挑">高挑<br />
+<input type="checkbox" name="tag" value="大方">大方
+<input type="checkbox" name="tag" value="活泼">活泼
+<input type="checkbox" name="tag" value="逗比">逗比
+<input type="checkbox" name="tag" value="犯二">犯二
+</div>
+<input type="submit" value="搜索" style="width:52px; height:30px; position: relative; left:424px; top:-30px;" onclick="search();"/>
+</div>
+</div>
+
+<!--返回的用户信息区域-->
+<div id="user_info">
+
+</div>
+
+</body>
+</html>

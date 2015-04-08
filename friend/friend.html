@@ -1,0 +1,617 @@
+﻿<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+<style type="text/css">
+*{margin:0; padding:0;}
+div#formarea{margin-left: 400px;}
+#nagv{margin-top:5px; margin-bottom:2px;}
+
+div#upload{position:relative ; left:580px; top:-475px;}
+div#uparea{border:2px solid #826858; width:120px; height:160px;background-color:#f2eada;}
+input#pic{margin-top:60px; border: 0px; margin-left:10px; width:60px; font-size:12px; background-color:#f2eada; filter:Alpha(opacity=10);}
+span#feedback{position:absolute; top:0px; left:5px; color:#a00000;z-index:5;}
+input#submit{position:relative; left:80px; top:-20px;}
+
+td#username{position:relative; top:5px;}
+input.username{width:200px; height:30px;}
+
+td#sex{position:relative; top:10px;}
+
+td#age{position:relative; top:15px;}
+
+td#qq{position:relative; top:20px;}
+input.qq{width:200px; height:30px; }
+
+td#area{position:relative; top:25px; margin-bottom: 5px;}
+select#city{display:none; position:relative; top:0px; left:5px; width:55px;}
+
+td#tags{position:relative; top:15px;}
+span.tname{color:red;position:relative; top:20px;}
+div.tag{width:470px; height:65px; border:1px #acacac solid;}
+div.tag input{margin-left:50px; margin-top: 5px;}
+
+td#intro_notice{position:relative; top:35px;left:50px; color:#EAEAEA;}
+
+td#intro{position:relative; top:30px;}
+textarea.intro{font-size:18px;position:relative; left:10px;}
+span#pintro{position: relative; top:-112px;}
+
+
+td#pub{position:relative; top:-12px;left:-140px;}
+input#publish{width:60px; height:30px;font-size:18px;}
+</style>
+
+<script type="text/javascript">
+//创建XHR
+function getXMLHttpRequest()
+{
+	var xmlhttp=null;
+	if(window.ActiveXObject)
+	{
+		xmlhttp = new ActiveXObject("Microsoft.XMLHttp");
+	}
+	else
+	{
+		xmlhttp=new XMLHttpRequest();
+	}
+	return xmlhttp;
+}
+function $(id)
+{
+	return document.getElementById(id);
+}
+
+//动态获取省份对应的城市名
+function select_city(id)
+{
+	var province = $(id).value;
+	var url = "/ciba/niujin-beta/friend/returncity.process.php";
+	var data="?province="+province+"&rand="+Math.random();
+	var xmlhttp = getXMLHttpRequest();
+	//alert(url+data);
+	if(xmlhttp)
+	{
+		xmlhttp.open("get", url+data, true);
+		xmlhttp.onreadystatechange = function()
+		{
+			if (xmlhttp.readyState==4 && xmlhttp.status==200)
+			{
+				var res=xmlhttp.responseText;
+				var cities = eval("("+res+")");
+				var city_node = $("city");
+				if(city_node.length > 0)
+				{
+					var len = city_node.length;
+					//alert(city_node.childNodes[0]);
+					for(index=0; index < len;index++)
+					{
+						city_node.removeChild(city_node.firstChild);
+					}
+				}
+				for(i in cities)
+				{
+					city_node.style.display="inline";
+					
+					var city = document.createElement("option");
+					city.setAttribute("value", cities[i].en);
+					city.appendChild(document.createTextNode(cities[i].ch));
+					city_node.appendChild(city);
+				}
+			}
+		}
+		xmlhttp.send(null);
+	}
+	
+}
+
+function process()
+{
+	document.getElementById("feedback").innerHTML="<img src='../image/loading.gif' width='30px'  />";
+}
+
+//检测姓名字段
+function checkName()
+{
+	var name = document.getElementsByName("username")[0].value;
+	var regx = /^[a-zA-Z\u4E00-\u95FA]/;
+	var regx_ch = /[\u4E00-\u95FA]{9,}/;
+	var regx_en = /^[A-Za-z]/;
+	if(name == '' || name==null)
+	{
+		if($("username").childNodes.length > 2)
+		{
+			$("username").removeChild($("username").lastChild);
+		}
+		
+		document.getElementsByName("username")[0].setAttribute("style", "border: 1px #ff0000 solid; background-color:#C0C0C0;");
+		var span = document.createElement("span");
+			var error_notice = document.createTextNode("名字不能为空");
+			span.appendChild(error_notice);
+			span.setAttribute("style", "color:red;margin-left:3px;");
+			
+			document.getElementsByName("username")[0].setAttribute("style", "border: 1px #ff0000 solid; background-color:#C0C0C0;");
+			
+			document.getElementById("username").appendChild(span);
+		return false;
+	}
+	else if(!regx.exec(name))
+	{
+		//防止在为刷新页面情况下，反复验证，多次出现提示信息
+		if($("username").childNodes.length > 2)
+		{
+			$("username").removeChild($("username").lastChild);
+		}
+		
+			//|| new RegExp(/^[a-z]/i).test(name) == false
+			var span = document.createElement("span");
+			var error_notice = document.createTextNode("必须以中/英文开头");
+			span.appendChild(error_notice);
+			span.setAttribute("style", "color:red;margin-left:3px;");
+			
+			document.getElementsByName("username")[0].setAttribute("style", "border: 1px #ff0000 solid; background-color:#C0C0C0;");
+			
+			document.getElementById("username").appendChild(span);
+			return false;
+		
+	}
+	else if(name.length < 2 || regx_ch.exec(name) || (regx_en.exec(name) && name.length > 32))
+	{
+		if($("username").childNodes.length > 2)
+		{
+			$("username").removeChild($("username").lastChild);
+		}
+		var span = document.createElement("span");
+		var error_notice = document.createTextNode("中文长度2~8之间，英文2~16");
+		span.appendChild(error_notice);
+		span.setAttribute("style", "color:red;margin-left:3px;");
+		
+		document.getElementsByName("username")[0].setAttribute("style", "border: 1px #ff0000 solid; background-color:#C0C0C0;");
+		
+		document.getElementById("username").appendChild(span);
+		return false;
+	}
+	else
+	{
+		if($("username").childNodes.length > 2)
+		{
+			$("username").removeChild($("username").lastChild);
+		}
+		//通过验证时给出一个黑色的对号，作为提示
+		var span = document.createElement("span");
+		var error_notice = document.createTextNode("√");
+		span.appendChild(error_notice);
+		span.setAttribute("style", "color:black;margin-left:3px;");
+		document.getElementById("username").appendChild(span);
+		return true;
+	}
+}
+
+//检测年龄字段
+function checkAge()
+{
+	var age = document.getElementsByName("age")[0].value;
+	
+	if(age == '')
+	{
+		if($("age").childNodes.length > 2)
+		{
+			$("age").removeChild($("age").lastChild);
+		}
+		document.getElementsByName("age")[0].setAttribute("style", "border: 1px #ff0000 solid; width:40px; height:30px;background-color:#C0C0C0;");
+		var span = document.createElement("span");
+		var error_notice = document.createTextNode("年龄不能为空");
+		span.appendChild(error_notice);
+		span.setAttribute("style", "color:red;margin-left:3px;");
+		
+		document.getElementsByName("age")[0].setAttribute("style", "border: 1px #ff0000 solid; width:40px; height:30px;background-color:#C0C0C0;");
+		
+		document.getElementById("age").appendChild(span);
+		return false;
+	}
+	else if(new RegExp(/\d{2}/).test(age) == false)
+	{
+		if($("age").childNodes.length > 2)
+		{
+			$("age").removeChild($("age").lastChild);
+		}
+		var span = document.createElement("span");
+		var error_notice = document.createTextNode("年龄必须为数字");
+		span.appendChild(error_notice);
+		span.setAttribute("style", "color:red;margin-left:3px;");
+		
+		document.getElementsByName("age")[0].setAttribute("style", "border: 1px #ff0000 solid; width:40px; height:30px;background-color:#C0C0C0;");
+		
+		document.getElementById("age").appendChild(span);
+		return false;
+	}
+	else if(age < 15 || age > 50)
+	{
+		if($("age").childNodes.length > 2)
+		{
+			$("age").removeChild($("age").lastChild);
+		}
+		var span = document.createElement("span");
+		var error_notice = document.createTextNode("年龄必须在15~50之间");
+		span.appendChild(error_notice);
+		span.setAttribute("style", "color:red;margin-left:3px;");
+		
+		document.getElementsByName("age")[0].setAttribute("style", "border: 1px #ff0000 solid; width:40px; height:30px;background-color:#C0C0C0;");
+		
+		document.getElementById("age").appendChild(span);
+		return false;
+	}
+	else
+	{
+		if($("age").childNodes.length > 2)
+		{
+			$("age").removeChild($("age").lastChild);
+		}
+		
+		var span = document.createElement("span");
+		var error_notice = document.createTextNode("√");
+		span.appendChild(error_notice);
+		span.setAttribute("style", "color:black;margin-left:3px;");
+		document.getElementById("age").appendChild(span);
+		return true;
+	}
+}
+
+//检测QQ账号
+function checkQQ()
+{
+	var qq = document.getElementsByName("qq")[0].value;
+	if(qq == '' || qq==null)
+	{
+		
+		if($("qq").childNodes.length > 2)
+		{
+			$("qq").removeChild($("qq").lastChild);
+		}
+		
+		var span = document.createElement("span");
+		var error_notice = document.createTextNode("QQ号不能为空");
+		span.appendChild(error_notice);
+		span.setAttribute("style", "color:red;margin-left:3px;");
+		
+		document.getElementsByName("qq")[0].setAttribute("style", "border: 1px #ff0000 solid; background-color:#C0C0C0;");
+		
+		document.getElementById("qq").appendChild(span);
+		return false;
+	}
+	else if(new RegExp(/\d{6,11}/).test(qq) == false)
+	{
+		if($("qq").childNodes.length > 2)
+		{
+			$("qq").removeChild($("qq").lastChild);
+		}
+		var span = document.createElement("span");
+		var error_notice = document.createTextNode("QQ号必须在6~11位之间");
+		span.appendChild(error_notice);
+		span.setAttribute("style", "color:red;margin-left:3px;");
+		
+		document.getElementsByName("qq")[0].setAttribute("style", "border: 1px #ff0000 solid; background-color:#C0C0C0;");
+		
+		document.getElementById("qq").appendChild(span);
+		return false;
+	}
+	else
+	{
+		if($("qq").childNodes.length > 2)
+		{
+			$("qq").removeChild($("qq").lastChild);
+		}
+		
+		var span = document.createElement("span");
+		var error_notice = document.createTextNode("√");
+		span.appendChild(error_notice);
+		span.setAttribute("style", "color:black;margin-left:3px;");
+		document.getElementById("qq").appendChild(span);
+		return true;
+	}
+}
+
+//检测省份
+function checkProvince()
+{
+	var province_name = $("province").options[$("province").selectedIndex].value;
+	if(province_name == 'none')
+	{
+		if($("area").childNodes.length > 5)
+		{
+			$("area").removeChild($("area").lastChild);
+		}
+		
+		$("province").setAttribute("style", "border: 1px #ff0000 solid");
+		var span = document.createElement("span");
+		var error_notice = document.createTextNode("请选择地区");
+		span.appendChild(error_notice);
+		span.setAttribute("style", "color:red;margin-left:3px;");
+		document.getElementById("area").appendChild(span);
+		return false;
+	}
+	else
+	{
+		if($("area").childNodes.length > 5)
+		{
+			$("area").removeChild($("area").lastChild);
+		}
+		
+		var span = document.createElement("span");
+		var error_notice = document.createTextNode("√");
+		span.appendChild(error_notice);
+		span.setAttribute("style", "color:black;margin-left:3px;");
+		$("province").setAttribute("style", "border: 1px #000000 solid");
+		
+		/*
+		var city_node = document.getElementById("city");
+		var parent_node = city_node.parentNode;
+		//document.getElementById("area").appendChild(span);
+		parent_node.appendChild(span);*/
+		document.getElementById("area").appendChild(span);
+		return true;
+	}
+}
+
+/*
+ * 
+*/
+function checkTag()
+{
+	var tags = document.getElementsByName("tag");
+	var flag=0;
+	for(i in tags)
+	{
+		if(tags[i].checked == true)
+		{
+			flag=1;
+		}
+	}
+	if(flag==0)
+	{
+		var div = document.getElementsByTagName("div")
+		for(i in div)
+		{
+			if(div[i].className == "tag")
+			{
+				div[i].setAttribute("style", "border: 1px #ff0000 solid;");
+			}
+		}
+		return false;
+	}
+}
+
+//检测个人宣言即textarea表单
+function checkIntro()
+{
+	var intro = document.getElementsByName("intro")[0].value;
+	//alert(intro.length); return false;
+	if(intro == '')
+	{
+		document.getElementsByName("intro")[0].setAttribute("style", "border: 1px #ff0000 solid; background-color:#C0C0C0;");
+		$("intro_notice").setAttribute("style", "display:none;");
+		return false;
+	}
+	else if(intro.length > 140)
+	{
+		if($("intro").childNodes.length > 2)
+		{
+			$("intro").removeChild($("intro").lastChild);
+		}
+		var span = document.createElement("span");
+		var error_notice = document.createTextNode("字符数不能超过140");
+		span.appendChild(error_notice);
+		span.setAttribute("style", "color:red;position:relative; top:-115px; left:13px;");
+		
+		document.getElementsByName("intro")[0].setAttribute("style", "border: 1px #ff0000 solid; background-color:#C0C0C0;");
+		
+		document.getElementById("intro").appendChild(span);
+		return false;
+	}
+}
+
+//检测用户是否上传了头像
+function checkImage()
+{
+	var feedback = $("feedback");
+	if(feedback.childNodes.length == 0)
+	{
+		if($("uparea").childNodes.length > 13)
+		{
+			$("uparea").removeChild($("uparea").lastChild);
+		}
+		
+		var span = document.createElement("span");
+		var error_notice = document.createTextNode("请上传头像");
+		span.appendChild(error_notice);
+		span.setAttribute("style", "color:red; position:relative; top:65px;");
+		$("uparea").appendChild(span);
+		return false;
+	}
+}
+
+//验证表单输入情况
+function checkData()
+{
+	if(checkName() == false)
+	{
+		return false;
+	}
+	
+	if(checkAge()==false)
+	{
+		return false;
+	}
+	
+	if(checkQQ()== false)
+	{
+		return false;
+	}
+	
+	if(checkProvince()==false)
+	{
+		return false;
+	}
+	
+	if(checkTag()==false)
+	{
+		return false;
+	}
+	
+	if(checkIntro()==false)
+	{
+		return false;
+	}
+	
+	if(checkImage()==false)
+	{
+		return false;
+	}
+	
+}
+
+/*
+ *根据<textarea>表单的输入情况给出提示
+ * 当输入字符小于或等于140字符时，给出还能输入多少字符的提示
+ * 当输入字符大于140字符时，给出超出多少字符的提示，并禁用提交按钮
+ *
+ *当已经存在提示结点时，清除结点，从而不会重复显示
+*/
+function checkIntroLength()
+{
+	if($("intro_notice").childNodes.length > 0)
+	{
+		$("intro_notice").removeChild($("intro_notice").firstChild);
+	}
+	if($("intro_notice").style.display=="none")
+	{
+		$("intro_notice").style.display="block";
+	}
+	var intro_content = document.getElementsByName("intro")[0];
+	var next_content_length = intro_content.value.length;
+	if(intro_content.value.length <= 140)
+	{
+		if($("publish").disabled==true)
+		{
+			$("publish").disabled=false;
+		}
+		var notice = "你已输入"+next_content_length+"字符";
+		var span = document.createElement("span");
+		var notice_content = document.createTextNode(notice);
+		span.appendChild(notice_content);
+		span.setAttribute("id", "notice");
+		
+	/*	var parent_node = intro_content.parentNode;
+		var pintro = $("pintro");
+		parent_node.insertBefore(span, pintro);		*/
+		
+		$("intro_notice").appendChild(span);
+		document.getElementsByName("intro")[0].setAttribute("style", "border: 0px; background-color:none;");
+	}
+	else
+	{
+		document.getElementsByName("intro")[0].setAttribute("style", "border: 1px #ff0000 solid; background-color:#C0C0C0;");
+		
+		//禁用提交表单
+		$("publish").disabled=true;
+		
+		var next_content_length = (intro_content.value.length)-140;
+		var notice = "输入超出"+next_content_length+"字符";
+		var span = document.createElement("span");
+		var notice_content = document.createTextNode(notice);
+		span.appendChild(notice_content);
+		span.setAttribute("id", "notice");
+		$("intro_notice").appendChild(span);
+		
+	}
+	
+	
+}
+</script>
+<head>
+
+<body bgcolor="#RGB(67,65,65)">
+<img src="../image/friend.jpg" style='margin-left:400px;'>
+
+<div id="formarea">
+
+<div id="nagv">
+<a href="homepage.php?cityname=wuhan" target="__blank">武汉地区</a>
+<a href="homepage.php?cityname=guangzhou" target="__blank">广州地区</a>
+<a href="homepage.php?cityname=changsha" target="__blank">长沙地区</a>
+<a href="search_friend.html" target="__blank">在线搜索</a>
+</div>
+
+<table style="border: 1px solid #acacac; width:710px; height: 480px;">
+<form action="upfile.process.php" method="post" onsubmit = "return checkData();">
+<input type="hidden" name="uploadtype" value="userinfo" >
+
+<tr><td id="username">姓&nbsp;名<input type = "text" class = "username" name="username"/></td><td rows='8'></td></tr>
+
+<tr><td id="sex"> 
+<p class="sex">性&nbsp;别
+<input type="radio" name="sex" value="男" checked="checked">男
+<input type="radio" name="sex" value="女">女
+<input type="radio" name="sex" value="*">保密</p>
+</td></td></tr>
+
+<tr><td id="age">年&nbsp;龄<input type="text" name="age" style="width:40px; height:30px;" /></td><td></td></tr>
+
+<tr><td id="qq">QQ&nbsp;号<input type="text" class = "qq" name="qq" /></td></td></tr>
+
+<tr><td id="area">地&nbsp;区
+<select id="province" name="area" onchange="select_city(this.id);">
+<option value="none">省份</option>
+<option value="hb">湖北</option>
+<option value="hn">湖南</option>
+<option value="gd">广东</option>
+</select>
+<select id="city" name="city"></select>
+</td><td></td></tr><!--要有联动的效果-->
+
+<tr><td id="tags"> <span class="tname">特&nbsp;征</span>
+<div class="tag">
+<input type="checkbox" name="tag" value="美丽" checked>美丽
+<input type="checkbox" name="tag" value="善良">善良
+<input type="checkbox" name="tag" value="清纯">清纯
+<input type="checkbox" name="tag" value="知性">知性<br />
+<input type="checkbox" name="tag" value="贤惠">贤惠
+<input type="checkbox" name="tag" value="优雅">优雅
+<input type="checkbox" name="tag" value="成熟">成熟
+<input type="checkbox" name="tag" value="高挑">高挑<br />
+<input type="checkbox" name="tag" value="大方">大方
+<input type="checkbox" name="tag" value="活泼">活泼
+<input type="checkbox" name="tag" value="逗比">逗比
+<input type="checkbox" name="tag" value="犯二">犯二
+</div></td>
+<td></td></tr>
+
+<tr ><td id="intro_notice"></td><td></td></tr>
+
+<tr><td id="intro">
+<span id="pintro">宣&nbsp;言</span>
+<textarea class = "intro" name="intro" cols="45" rows="6" onkeyup="setTimeout('checkIntroLength()',100);">
+请输入你的交友宣言(140字以内)</textarea></td>
+<td></td></tr>
+
+<tr><td></td><td id = "pub" cols="2"><input type="submit" id="publish" value="发布" ></td></tr>
+</form>
+</table>
+
+<div id="upload">
+<form action="upfile.process.php" method="post" enctype="multipart/form-data" target='frameworks' onsubmit="return process();" >
+<div id="uparea">
+<input type="hidden" name="MAX_FILE_SIZE" value="2100000">
+<input type="file" name="pic" id="pic" /><br />
+<span id="feedback"></span>
+<input type="hidden" name="uploadtype" value="userpic" >
+<input type="submit" value="上传" id="submit"><br />
+</div><!--uparea-->
+</form>
+<div><!-- 上传区域-->
+
+</div><!--表单区域-->
+
+
+<iframe name='frameworks' style='border:0; frameborder:0; display:hidden;'></iframe>
+</body>
+</html>

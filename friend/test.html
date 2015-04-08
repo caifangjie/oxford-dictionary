@@ -1,0 +1,21 @@
+﻿<html>
+<head>
+<script type="text/javascript">
+
+function checkData(name)
+{
+	if( new RegExp(/^[a-zA-Z\u4eE00-\u95FA]/).test(name) == false )
+	{
+		alert("验证未通过");
+	}
+	else
+	{
+		alert("验证通过");
+	}
+}
+
+checkData("蔡方杰");
+</script>
+</head>
+
+</html>

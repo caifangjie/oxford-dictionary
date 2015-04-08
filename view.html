@@ -1,0 +1,292 @@
+﻿<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+<script type="text/javascript">
+//清空补全表单
+function clearFill()
+{
+	var ul=$("showRes");
+	if(len=ul.childNodes.length)
+	{
+		//window.alert(len);
+		for(var i=len-1; i>=0; i--)
+		{
+			ul.removeChild(ul.childNodes[i]);
+		}
+		ul.style.display="none";
+	}
+	
+}
+//创建XHR
+function getXMLHttpRequest()
+{
+	var xmlhttp=null;
+	if(window.ActiveXObject)
+	{
+		xmlhttp = new ActiveXObject("Microsoft.XMLHttp");
+	}
+	else
+	{
+		xmlhttp=new XMLHttpRequest();
+	}
+	return xmlhttp;
+}
+//发送AJAX查询
+function query(type)
+{
+	var url="/ciba/niujin-beta/process.php";
+	//查询结果
+	if(type==1)
+	{
+		var data="?enword="+$('enWord').value+"&type="+type+"&rand="+Math.random();	
+		var en=$('enWord').value;
+		//$('enWord').value="";
+	}
+	//发送Ajax补全
+	else if(type==2)
+	{
+		var data="?enword="+$('enWord').value+"&type="+type+"&rand="+Math.random();	
+		var en=$('enWord').value;
+	}
+	//window.alert(type);
+	xmlhttp=getXMLHttpRequest();
+	 if (xmlhttp)
+	 {
+		xmlhttp.open("get", url+data,true);
+		//window.alert(url+data);
+		 xmlhttp.onreadystatechange=function()
+		{
+			//window.alert(xmlhttp.readyState);
+			
+			if (xmlhttp.readyState==4 && xmlhttp.status==200)
+			{
+				var res=xmlhttp.responseText;
+				res=eval("("+res+")");
+				//window.alert(res.flag);
+                                //当返回的是查询结果时
+				if(res.flag==1)
+				{
+					words= res.result;
+					//window.alert(words.length);
+					item='';
+					for(i in words)
+					{
+						item += "<p style = ' border: 1px solid gray; width:650px;  background-color:grey; color: #000090;'>"+words[i]+"<p>";
+					}
+					$("chWord").innerHTML= "<span style='color:#a00000;'>"+en+"</span>"+":<br /> "+item;   
+				}
+                                 //当返回的是补全提示时
+				else if(res.flag==2)
+				{
+					var parent=document.getElementById("showRes");
+					var result=res.result;
+					clearFill();
+					for(i in result)
+					{
+						var text=document.createTextNode(result[i]);
+						var li=document.createElement("li");
+						li.appendChild(text);
+						parent.appendChild(li);
+						
+						li.onmouseover = function(){  
+							this.className = "mouseOver" ;  //鼠标指针经过时高亮  
+						}  
+						li.onmouseout = function(){  
+							this.className = "mouseOut" ;   //鼠标指针离开时恢复原样  
+						}  
+						li.onclick = function(){  
+							//用户单击某个匹配项时、设置输入框为该项的值  
+							$("enWord").value = this.firstChild.nodeValue;
+							query(1);
+							clearFill();  //同时清除提示框  
+							
+						}
+					}
+					parent.style.display="block";
+				}
+			}
+		} 
+		xmlhttp.send(null); 
+	 }
+}
+//捕捉回车键，如果是，进行查询
+function sendQuery(event)
+{
+	var ul=$("showRes");
+	if(ul.style.display=="block") 
+	{
+		ul.style.display="none";
+	}
+	
+	query(1);
+	return false;
+}
+
+//对搜索框进行提示和补全时，发送ajax查询
+function sendFill(event)
+{
+	var val=$("enWord").value;
+	if(val.length >=2 )
+	{
+		query(2);
+	}
+}
+
+UlIndex=0;
+function send(event)
+{
+	//当检测到按下的是回车键时
+	if(event.keyCode == 13)
+	{
+		sendQuery(event);
+	}
+	//当检测到按下的是a-z A-Z时
+	else if(event.keyCode>=65 && event.keyCode<=90 || event.keyCode>=97&&event.keyCode<=122)
+	{
+		sendFill(event);
+	}
+	//当检测到按下的是向下键  或者回车键  时
+	else if(event.keyCode == 40 || event.keyCode == 39)
+	{
+		if($("showRes").hasChildNodes())
+		{
+			var items = $("showRes").childNodes;
+			var len = items.length;
+			//window.alert(len);
+			if(len>0)
+			{
+				if((UlIndex++) >= len){UlIndex = len;}
+				$("enWord").value = items[UlIndex%len].firstChild.nodeValue;
+			}
+                        //当按下的是回车键时，发送查询
+				if(event.keyCode==39)
+				{
+					sendQuery();
+				}
+			
+		}
+		
+	}
+	//当检测到按下的是向上键  或者回车键 时
+	else if(event.keyCode == 38 || event.keyCode == 39)
+	{
+		if($("showRes").hasChildNodes())
+		{
+			var items = $("showRes").childNodes;
+			var len = items.length;
+			if(len>0)
+			{
+				if((UlIndex--) <= 0){UlIndex = 0;}
+				//items[((--UlIndex)%len)].style.background-color="#aabbcc";
+				$("enWord").value = items[(UlIndex%len)].firstChild.nodeValue;
+			}
+                           //当按下的是回车键时，发送查询
+				if(event.keyCode==39)
+				{
+					sendQuery();
+				}
+			
+		}
+		
+	}
+        //当按下的是右方向键时，发送查询
+	else if(event.keyCode==8)
+	{
+		sendFill();
+		if($("enWord").value.length<=1)
+		{
+			clearFill();
+		}
+	}
+}
+//清空输入框
+function clearContent()
+{
+	$("enWord").value="";
+	return false;
+}
+function $(id)
+{
+	return document.getElementById(id);
+}
+window.onload = function()
+{
+	$("enWord").setAttribute("autocomplete", "off");
+	$("enWord").focus();
+}
+</script>
+
+<style rel="stylesheet" type="text/css">
+#outer{margin-left: 400px;}
+#markup{margin-top:5px;}
+#his{color:gray;
+	font-size:16px;}
+#showRes{
+		background-color:white;
+		border: 1px solid gray;
+		width:650px;
+		display:none;
+		list-style: none;  
+        margin: 0px; padding: 0px;  
+		z-index:10;}
+#enWord{
+		width:650px;
+		height:40px;
+		border:2px solid gray;
+		margin-top:10px;
+		margin-bottom:0px;
+		padding: 1px;
+		font-size:14px;
+		}
+#sendButton{
+			width:65px;
+			height:35px;
+			padding: 1px;
+			font-family: Arial,Helvetica,sans-serif;  
+			font-size:16px;
+			}
+#chWord{position:relative;
+		left:10px;
+		top:30px;
+		width:710px;
+		font-size:20px;
+		}
+	 ul{  
+        list-style: none;  
+        margin: 0px; padding: 0px; 
+		z-index:11;
+    }  
+	li.mouseOver{  
+        background-color: #eeeeee;  
+        color: #aabbcc;
+		font-size:18px;
+		font-weight:bold;
+    }  
+    li.mouseOut{  
+        background-color: #FFFFFF;  
+        color: #004a7e;  
+    }  
+</style>
+</head>
+<body bgcolor="#RGB(67,65,65)">
+<div id="outer">
+<img src="./image/logo.jpg" /><br />
+<div id="markup">
+<a href="./paragraph/speech.php" id="his" target="_blank">美文欣赏</a>
+<a href="./review/getHisFromMysql.php" id="his" target="_blank">查询历史</a>
+<a href="./addword/addword.html" id="his" target="_blank">添加词条</a>
+<a href="./dict_info/dict.info.php" id="his" target="_blank">字典信息</a>
+<a href="./beautyleg/beauty.php" id="his" target="_blank">美图欣赏</a>
+<a href="./friend/friend.html" id="his" target="_blank">发布交友</a>
+<a href="./advice/advice.html" id="his" target="_blank">意见反馈</a>
+</div>
+
+<input type="text"   id="enWord"   onclick="clearContent();" onkeyup="setTimeout(send(event),300);" onblur="clearFill();"/>
+<input type="button" id="sendButton" value="查询" onclick="query(1);" /><br />
+<ul id="showRes">
+</ul>
+<div id="chWord"><div>
+</div>
+</body>
+</html>

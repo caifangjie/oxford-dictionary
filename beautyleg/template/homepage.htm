@@ -1,0 +1,37 @@
+<html>
+<head>
+<style type="text/css">
+*{margin:0px; padding:0px;}
+div#layout{margin-left:415px; margin-top:5px; width:700px; }
+
+div#user{width:680px; height: 162px; border:1px solid #cde6c7;background-color:#918597;}
+
+div#info{position:relative; top:-146px; left: 200px;}
+
+p#name{margin-top:-3px;}
+p{margin-top: 12px; color:#56452d; }
+p#intro{margin-bottom:12px;}
+
+span{color:#6950a1;margin-left:30px;}
+span#image{margin-left:1px; margin-bottom: 0px; height:162px;}
+</style>
+<head>
+
+<body bgcolor="#RGB(67,65,65)">
+<img src="../image/addfriend.jpg" style='margin-left: 400px; margin-top:1px;'>
+<div id="layout">
+<{foreach from=$user_info item=info key=index}>
+<div id="user">
+<p><span>姓名</span><span>$info[index]</span><p>
+<p><span>性别</span><span>$info[index]</span><p>
+<p><span>年龄</span><span>$info[index]</span><p>
+<p><span>QQ号</span><span>$info[index]</span><p>
+<p><span>住址</span><span>$info[index]</span><p>
+<p><span>标签</span><span>$info[index]</span><p>
+<p><span>交友宣言</span><span>$info[index]</span><p>
+<p><span>$info[index]</span><p>
+</div>
+<{/foreach}>
+</div>
+</body>
+</html>

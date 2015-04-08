@@ -1,0 +1,106 @@
+﻿<html>
+<head>
+<style type="text/css">
+#layer{width: 1000px; height:500px; background-color:#abcdab;}
+#reviewZone{position: absolute; top: 120px;left: 410px;}
+
+
+#word{width:70px; height:20px; border: 1px solid #bcbcbc; background-color: #ff0000;}
+#button{  woidth: 70px ;height: 20px; border:1 solid #FFCC00;color: #FFCCFF;font-size: 12pt;font-style: normal;font-variant: normal;font-weight: 
+normal; line-height: normal;background-color: #9900FF;}
+
+#getTrans{width:70px; height:20px;border:1 solid #FFCC00;color: #FFCCFF;font-size: 12pt;font-style: normal;font-variant: normal;font-weight: normal;line-height: normal;background-color: #9900FF;}
+
+#content{position: absolute; top: 140px;left: 410px;}
+</style>
+
+<script type="text/javascript">
+function getXMLHttpRequest()
+{
+	var xmlhttp=null;
+	if(window.ActiveXObject)
+	{
+		xmlhttp = new ActiveXObject("Microsoft.XMLHttp");
+	}
+	else
+	{
+		xmlhttp=new XMLHttpRequest();
+	}
+	return xmlhttp;
+}
+function query(type)
+{
+	var url="/ciba/niujin-beta/review/reviewWord.process.php";
+	if(type==1)
+	{
+		var data ="?type=1";
+	}
+	else if(type==2)
+	{
+		var word=$("word").innerHTML;
+		var data ="?type=2&word="+word; 
+	}
+	 var xmlhttp=getXMLHttpRequest();
+	 if(xmlhttp)
+	{
+		xmlhttp.open("get", url+data,true);
+		//window.alert(url+data);
+		xmlhttp.onreadystatechange=function()
+		{
+			if (xmlhttp.readyState==4 && xmlhttp.status==200)
+			{
+				var res=xmlhttp.responseText;
+				res=eval("("+res+")");
+				if(res.flag==1)
+				{
+					$("word").innerHTML = res.result;
+				}
+				else if(res.flag==2)
+				{
+					item='';
+					var words = res.result;
+					for(i in words)
+					{
+						item += "<p style = ' border: 1px solid gray; width:650px; background-color:grey; color: #000090;'>"+words[i]+"<p>";
+					}
+					$("content").innerHTML = item;   
+				}
+			}
+		}
+		xmlhttp.send(null);
+	}	 
+}
+function $(id)
+{
+	return document.getElementById(id);
+}
+function getWord()
+{
+	query(1);
+}
+
+function getTrans()
+{
+	if($("word").value !="undefined")
+	{
+		query(2);
+	}
+}
+
+</script>
+</head>
+<body bgcolor="#RGB(67,65,65)">
+<img src="../image/ici.jpg" style="margin-left: 400px;">
+
+<div id='reviewZone'>
+<a id='getTrans'  onclick="getTrans();" title="点击查看单词的翻译">查看翻译</a>
+<a id="button" onclick="getWord();" >获取单词</a>
+<span id='word' ></span>
+</div>
+
+<div id='transZone'>
+<span id='content'></span>
+</div>
+
+</body>
+</html>

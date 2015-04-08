@@ -1,0 +1,80 @@
+﻿<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<style type="text/css">
+#addword{position: absolute; left:410px; top:130px}
+span{font-size: 25px; font-weight: 12pt; color: #ababab; background-color: #B9D3EE; margin-right: 10px; height:50px;}
+span#addtrans{position: relative; top: -160px;}
+#word{width: 625px; height: 40px; margin-bottom: 10px; }
+
+input#word{font-size: 24px;padding-left: 5px;color:#CD661D;}
+textarea#trans{font-size: 20px;padding-left: 5px;padding-top:5px;color:#1C86EE}
+input#submit{width:65px;height:35px;padding: 1px;font-family: Arial,Helvetica,sans-serif;  font-size:16px; position: absolute; left:670px;}
+#feedback{position: absolute; left:110px; background-color:DBDBDB; color:#ee0000; height:30px;}
+</style>
+<script type="text/javascript">
+function checkLength()
+{
+	if(document.getElementById("trans").value.length >= 42)
+	{
+		alert("最多支持42个字符");
+	}
+}
+function clearTextarae()
+{
+	document.getElementById("trans").value="";
+}
+function clearInput()
+{
+	document.getElementById("word").value="";
+}
+function getXMLHttpRequest()
+{
+	var xmlhttp=null;
+	if(window.ActiveXObject)
+	{
+		xmlhttp = new ActiveXObject("Microsoft.XMLHttp");
+	}
+	else
+	{
+		xmlhttp=new XMLHttpRequest();
+	}
+	return xmlhttp;
+}
+function sendQuery()
+{
+	var xmlhttp = getXMLHttpRequest();
+	if(xmlhttp)
+	{
+		url="/ciba/niujin-beta/addword/addword.process.php?";
+		var word = $("word").value;
+		var trans = $("trans").value;
+		var data="word="+word+"&trans="+trans;
+		xmlhttp.open("get", url+data, true);
+		xmlhttp.onreadystatechange=function()
+		{
+			if(xmlhttp.readyState==4 && xmlhttp.status==200)
+			{
+				var res = xmlhttp.responseText;
+				$("feedback").innerHTML=res;
+			}
+		}
+		xmlhttp.send(null);
+	}
+}
+function $(id)
+{
+	return document.getElementById(id);
+}
+</script>
+</head>
+<body bgcolor="#RGB(67,65,65)">
+<img src="../image/addci.jpg" style="margin-left: 400px;">
+
+<div id="addword">
+<span>添加单词</span><input type="text" value = "添加单词"id="word" name="word" onclick="clearInput();"><br />
+<span id="addtrans">添加翻译</span><textarea cols="60" rows="8" id="trans" name="trans" onkeydown="checkLength();" onclick="clearTextarae();">添加翻译，暂时只允许42字符</textarea><br />
+<div id="feedback"></div><input type = "button" value="提交" id="submit" onclick="sendQuery();">
+</div>
+</body>
+</html>

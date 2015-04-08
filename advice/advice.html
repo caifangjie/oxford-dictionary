@@ -1,0 +1,33 @@
+﻿<html>
+<head>
+<style type="text/css">
+div#outer{margin-left: 400px; margin-top:5px;}
+div#inner{margin-left: 328px; margin-top:5px;}
+input#code{width:60px; height:30px;}
+input#submit{width:50px; height:30px; font-size:18px;}
+#img{width:50px; height:30px; margin-right:10px; }
+#code{position:relative; top:-10px;}
+#adv{font-size: 18px;}
+#submit{position:relative; top:-10px;}
+</style>
+<script type="text/javascript">
+function getCode()
+{
+	document.getElementById('img').src="checkCode.class.php?num="+Math.random();
+}
+</script>
+</head>
+<body bgcolor="#RGB(67,65,65)">
+<img src="../image/advice.jpg" style='margin-left:400px;'>
+<div id="outer">
+<form action="advice.process.php" method="post">
+<textarea cols="60" rows="8" name="adv" id="adv"></textarea><br />
+<div id="inner">
+<img src="checkCode.class.php" id="img" name="img" onclick = "getCode();"/>
+<input type="text" name="code" id="code" />
+<input type="submit" value="提交" id="submit" />
+</div>
+</div>
+</form>
+</body>
+</html>
